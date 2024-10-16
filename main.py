@@ -17,7 +17,7 @@ def initRobot():
 
 
 class Robot:
-    def __init__(self, comPort=('COM3', 9600)):
+    def __init__(self, comPort=('COM4', 9600)):
         self.stack = []
         self.serialConnection = serial.Serial(comPort[0], comPort[1])
         self.moveThread = threading.Thread(target=self.moveRobot)
@@ -34,7 +34,8 @@ class Robot:
                 self.sendData(temp)
 
     def sendData(self, data: str):
-        self.serialConnection.write(data.encode())
+        possibleSides = {'forward':'w', 'back':'s', 'left':'a', 'right':'d','stop':'c'}
+        self.serialConnection.write(possibleSides[data].encode())
 
 
 myRobot = initRobot()
@@ -43,7 +44,7 @@ app = fAPI.FastAPI()
 
 @app.get("/move-robot")
 async def callMove(side: str):
-    possibleSides = ['forward', 'back', 'left', 'right']
+    possibleSides = ['forward', 'back', 'left', 'right','stop']
     if side not in possibleSides:
         return {"Message": "Bad parameter" + side}
     myRobot.addToStack(side)
