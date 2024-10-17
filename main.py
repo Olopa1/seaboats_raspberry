@@ -2,7 +2,7 @@ import fastapi as fAPI
 import threading
 import serial
 import re
-
+import uvicorn
 
 def initRobot():
     com = input("Insert serial port that arduino is connected")
@@ -61,3 +61,6 @@ async def callMove(side: str):
         return {"Message": "Bad parameter: " + side}
     myRobot.addToStack(side)
     return {"Message": "Operation OK"}
+
+if __name__=="__main__":
+    uvicorn.run(app,host="0.0.0.0",port=8000)
