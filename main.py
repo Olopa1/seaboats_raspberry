@@ -1,23 +1,29 @@
 import fastapi as fAPI
 import threading
 import serial
-import re
+import socket
 import uvicorn
-
+import platform
+import subprocess
 def initRobot():
     com = input("Insert serial port that arduino is connected")
     speed = int(input("Insert speed of serial port"))
     commonsSpeeds = [9600, 19200, 38400, 57600, 115200]
     newRobot = None
-    if speed in commonsSpeeds:
-        newRobot = Robot((com, speed))
+    if platform.system() == 'Linux':
+        port = subprocess.check_output("ls /dev/ttyACM*")
+        port = port.strip()
+        newRobot = Robot((port,9600))
     else:
-        newRobot = Robot()
+        if speed in commonsSpeeds:
+            newRobot = Robot((com, speed))
+        else:
+            newRobot = Robot()
     return newRobot
 
 
 class Robot:
-    def __init__(self, comPort=('COM4', 9600)):
+    def __init__(self, comPort=('COM3', 9600)):
         self.stack = []
         self.serialConnection = serial.Serial(comPort[0], comPort[1])
         self.moveThread = threading.Thread(target=self.moveRobot)
@@ -50,7 +56,7 @@ class Robot:
         self.serialConnection.write(possibleSides[data].encode())
 
 
-myRobot = initRobot()
+#myRobot = initRobot()
 app = fAPI.FastAPI()
 
 
@@ -59,8 +65,8 @@ async def callMove(side: str):
     possibleSides = ['forward', 'back', 'left', 'right', 'stop']
     if side not in possibleSides:
         return {"Message": "Bad parameter: " + side}
-    myRobot.addToStack(side)
+    #myRobot.addToStack(side)
     return {"Message": "Operation OK"}
 
 if __name__=="__main__":
-    uvicorn.run(app,host="0.0.0.0",port=8000)
+    uvicorn.run(app,host="192.168.0.128",port=8000)
