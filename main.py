@@ -3,13 +3,13 @@ import threading
 import serial
 import re
 
+
 def initRobot():
     com = input("Insert serial port that arduino is connected")
     speed = int(input("Insert speed of serial port"))
     commonsSpeeds = [9600, 19200, 38400, 57600, 115200]
-    pattern = r'^com[1-9]$'
     newRobot = None
-    if speed in commonsSpeeds and re.match(pattern, com):
+    if speed in commonsSpeeds:
         newRobot = Robot((com, speed))
     else:
         newRobot = Robot()
@@ -21,6 +21,7 @@ class Robot:
         self.stack = []
         self.serialConnection = serial.Serial(comPort[0], comPort[1])
         self.moveThread = threading.Thread(target=self.moveRobot)
+        self.readThread = threading.Thread(target=self.readDataFromRobot)
         self.moveThread.start()
 
     def addToStack(self, side):
@@ -33,8 +34,19 @@ class Robot:
                 print(f"Stack not empty next move: {temp}")
                 self.sendData(temp)
 
+    def startReadingData(self):
+        self.readThread.start()
+
+    def readDataFromRobot(self):
+        while True:
+            try:
+                print("Arduino response:")
+                self.serialConnection.readlines()
+            except:
+                continue
+
     def sendData(self, data: str):
-        possibleSides = {'forward':'w', 'back':'s', 'left':'a', 'right':'d','stop':'c'}
+        possibleSides = {'forward': 'w', 'back': 's', 'left': 'a', 'right': 'd', 'stop': 'c'}
         self.serialConnection.write(possibleSides[data].encode())
 
 
@@ -44,8 +56,8 @@ app = fAPI.FastAPI()
 
 @app.get("/move-robot")
 async def callMove(side: str):
-    possibleSides = ['forward', 'back', 'left', 'right','stop']
+    possibleSides = ['forward', 'back', 'left', 'right', 'stop']
     if side not in possibleSides:
-        return {"Message": "Bad parameter" + side}
+        return {"Message": "Bad parameter: " + side}
     myRobot.addToStack(side)
     return {"Message": "Operation OK"}
