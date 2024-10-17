@@ -1,7 +1,6 @@
 import fastapi as fAPI
 import threading
 import serial
-import re
 import uvicorn
 
 def initRobot():
@@ -46,21 +45,23 @@ class Robot:
                 continue
 
     def sendData(self, data: str):
-        possibleSides = {'forward': 'w', 'back': 's', 'left': 'a', 'right': 'd', 'stop': 'c'}
+        possibleSides = {'forward': 'w', 'back': 'x', 'left': 'a', 'right': 'd', 'stop': 's',
+                         'diagonalleft':'e','diagonalright':'q','diagonalbackleft':'z','diagonalbackright':'c','turnleft':'f','turnright':'r'}
         self.serialConnection.write(possibleSides[data].encode())
 
 
-myRobot = initRobot()
+#myRobot = initRobot()
 app = fAPI.FastAPI()
 
 
 @app.get("/move-robot")
 async def callMove(side: str):
-    possibleSides = ['forward', 'back', 'left', 'right', 'stop']
+    possibleSides = ['forward', 'back', 'left', 'right', 'stop'
+        ,'diagonalleft','diagonalright','diagonabacklleft','diagonalbackright','turnleft','turnright']
     if side not in possibleSides:
         return {"Message": "Bad parameter: " + side}
-    myRobot.addToStack(side)
+    #myRobot.addToStack(side)
     return {"Message": "Operation OK"}
 
 if __name__=="__main__":
-    uvicorn.run(app,host="0.0.0.0",port=8000)
+    uvicorn.run(app,host="192.168.0.128",port=8000)
