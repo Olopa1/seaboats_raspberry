@@ -46,7 +46,7 @@ class Robot:
 
     def sendData(self, data: str):
         possibleSides = {'forward': 'w', 'back': 'x', 'left': 'a', 'right': 'd', 'stop': 's',
-                         'diagonalleft':'e','diagonalright':'q','diagonalbackleft':'z','diagonalbackright':'c','turnleft':'f','turnright':'r'}
+                         'diagonalleft':'e','diagonalright':'q','diagonalbackleft':'z','diagonalbackright':'c','turnleft':'f','turnright':'r','speedup':'p','speeddown':'o'}
         self.serialConnection.write(possibleSides[data].encode())
 
 
@@ -57,11 +57,14 @@ app = fAPI.FastAPI()
 @app.get("/move-robot")
 async def callMove(side: str):
     possibleSides = ['forward', 'back', 'left', 'right', 'stop'
-        ,'diagonalleft','diagonalright','diagonabacklleft','diagonalbackright','turnleft','turnright']
+        ,'diagonalleft','diagonalright','diagonalbackleft','diagonalbackright','turnleft','turnright','speedup','speeddown']
     if side not in possibleSides:
         return {"Message": "Bad parameter: " + side}
     #myRobot.addToStack(side)
     return {"Message": "Operation OK"}
 
+@app.get("/adjust-speed")
+async def changeSpeed(speed: str):
+    pass
 if __name__=="__main__":
-    uvicorn.run(app,host="192.168.0.128",port=8000)
+    uvicorn.run(app,host="192.168.0.179",port=8000)
